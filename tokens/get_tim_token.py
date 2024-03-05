@@ -1,29 +1,30 @@
 import json
 import requests
 import time
+from pathlib import Path
 
 url = "https://www.tim.pl/graphql"
-tim_token_path = "/Users/macair/Desktop/Inglobus/Ready allegro.pl/tokens/tim_token.json"
+tim_token_path = Path(__file__).parent.joinpath("tim_token.json")
 
 
 def get_tim_token():
-    with open(tim_token_path,"r") as file:
+    with open(tim_token_path, "r") as file:
         info = json.load(file)
     token = info["token"]
     token_time = info["time"]
-    
+
     if (time.time() - token_time) >= 1750:
         token = request_token()
         token_time = time.time()
-        with open(tim_token_path,"w") as file:
+        with open(tim_token_path, "w") as file:
             data = {"token": token, "time": token_time}
-            json.dump(data,file,indent=4,ensure_ascii=False)
+            json.dump(data, file, indent=4, ensure_ascii=False)
         time.sleep(0.5)
 
     return token
-   
 
-def request_token(): 
+
+def request_token():
     global token_time
     schema = """
     mutation{
@@ -36,6 +37,7 @@ def request_token():
     response = requests.post(url=url, json={"query": schema})
     return response.json()["data"]["login"]["token"]
 
+
 if __name__ == "__main__":
     token = get_tim_token()
     print(token)
@@ -44,4 +46,3 @@ if __name__ == "__main__":
     #     data = {"token": token, "time": token_time}
     #     json.dump(data,file,indent=4,ensure_ascii=False)
     # ended by allegro
-    

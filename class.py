@@ -11,6 +11,7 @@ from tokens.get_allegro_token import get_access_token
 import concurrent.futures
 from threading import Lock
 from updater import update_database
+from pathlib import Path
 
 # import allegro_functions.al_requests_calculator as calc
 # from watchpoints import watch
@@ -20,12 +21,10 @@ import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-RESULTS = "/Users/macair/Desktop/Inglobus/Ready allegro.pl/databases/results.csv"
-AFTPR_DT = "/Users/macair/Desktop/Inglobus/Ready allegro.pl/databases/after_process.csv"
-READY_DT = "/Users/macair/Desktop/Inglobus/Ready allegro.pl/databases/ready_offers.csv"
-SORTED_DT = (
-    "/Users/macair/Desktop/Inglobus/Ready allegro.pl/databases/sorted_database.csv"
-)
+RESULTS = Path(__file__).parent.joinpath("databases/results.csv")
+AFTPR_DT = Path(__file__).parent.joinpath("databases/after_process.csv")
+READY_DT = Path(__file__).parent.joinpath("databases/ready_offers.csv")
+SORTED_DT = Path(__file__).parent.joinpath("databases/sorted_database.csv")
 LOCK = Lock()
 
 # def get_thumbnail(search_term):
@@ -1122,80 +1121,80 @@ def post_products_fun(post_products):
 
 
 if __name__ == "__main__":
-    aftpr_keys = [
-        "SKU",
-        "name",
-        "EAN",
-        "producer_name",
-        "category",
-        "shipping",
-        "package_size",
-        "available_in_parcel_locker",
-        "default_image",
-        "shipping_cost",
-        "unit",
-        "qty",
-        "price",
-        "status",
-        "allegro_id",
-    ]
-    update_database()
+    # aftpr_keys = [
+    #     "SKU",
+    #     "name",
+    #     "EAN",
+    #     "producer_name",
+    #     "category",
+    #     "shipping",
+    #     "package_size",
+    #     "available_in_parcel_locker",
+    #     "default_image",
+    #     "shipping_cost",
+    #     "unit",
+    #     "qty",
+    #     "price",
+    #     "status",
+    #     "allegro_id",
+    # ]
+    # update_database()
 
-    with open(AFTPR_DT, "w") as file:
-        writer = csv.DictWriter(file, aftpr_keys)
-        writer.writeheader()
+    # with open(AFTPR_DT, "w") as file:
+    #     writer = csv.DictWriter(file, aftpr_keys)
+    #     writer.writeheader()
 
-    putch_products_generator = get_putch_datas()
+    # putch_products_generator = get_putch_datas()
 
-    start = time.time()
-    for putch_products, end_products in putch_products_generator:
-        main_dict = putch_products_fun(putch_products)
-        del putch_products
-        main_dict.update(end_products_fun(end_products))
-        del end_products
-        print("Saving ....")
-        with open(AFTPR_DT, "a") as file:
-            writer = csv.DictWriter(file, aftpr_keys)
-            writer.writerows(main_dict.values())
+    # start = time.time()
+    # for putch_products, end_products in putch_products_generator:
+    #     main_dict = putch_products_fun(putch_products)
+    #     del putch_products
+    #     main_dict.update(end_products_fun(end_products))
+    #     del end_products
+    #     print("Saving ....")
+    #     with open(AFTPR_DT, "a") as file:
+    #         writer = csv.DictWriter(file, aftpr_keys)
+    #         writer.writerows(main_dict.values())
 
-    print("\nTime lost: " + str(time.time() - start))
-    print("-" * 100, end="\n\n")
+    # print("\nTime lost: " + str(time.time() - start))
+    # print("-" * 100, end="\n\n")
 
-    post_products_generator = get_post_datas()
-    start = time.time()
-    for post_products in post_products_generator:
-        main_dict = post_products_fun(post_products)
-        print("Saving ....")
-        with open(AFTPR_DT, "a") as file:
-            writer = csv.DictWriter(file, aftpr_keys)
-            writer.writerows(main_dict.values())
-    print("\nTime lost: " + str(time.time() - start))
-    print("-" * 100, end="\n\n")
+    # post_products_generator = get_post_datas()
+    # start = time.time()
+    # for post_products in post_products_generator:
+    #     main_dict = post_products_fun(post_products)
+    #     print("Saving ....")
+    #     with open(AFTPR_DT, "a") as file:
+    #         writer = csv.DictWriter(file, aftpr_keys)
+    #         writer.writerows(main_dict.values())
+    # print("\nTime lost: " + str(time.time() - start))
+    # print("-" * 100, end="\n\n")
 
-    start = time.time()
-    missmatch_products = get_missmatch_datas()
-    for row in missmatch_products:
-        new_category = (
-            re.search(r"\(\d+\)", row["status"])
-            .group()
-            .replace("(", "")
-            .replace(")", "")
-        )
-        row["category"] = new_category
+    # start = time.time()
+    # missmatch_products = get_missmatch_datas()
+    # for row in missmatch_products:
+    #     new_category = (
+    #         re.search(r"\(\d+\)", row["status"])
+    #         .group()
+    #         .replace("(", "")
+    #         .replace(")", "")
+    #     )
+    #     row["category"] = new_category
 
-    main_dict = post_products_fun(list(map(Product, missmatch_products)))
-    print("Saving ....")
-    with open(AFTPR_DT, "r") as file:
-        reader = csv.DictReader(file)
-        old_rows = {row["SKU"]: row for row in reader}
-    old_rows.update(main_dict)
-    with open(AFTPR_DT, "w") as file:
-        writer = csv.DictWriter(file, aftpr_keys)
-        writer.writeheader()
-        writer.writerows(old_rows.values())
-    del main_dict
-    print("\nTime lost: " + str(time.time() - start))
-    print("-" * 100, end="\n\n")
+    # main_dict = post_products_fun(list(map(Product, missmatch_products)))
+    # print("Saving ....")
+    # with open(AFTPR_DT, "r") as file:
+    #     reader = csv.DictReader(file)
+    #     old_rows = {row["SKU"]: row for row in reader}
+    # old_rows.update(main_dict)
+    # with open(AFTPR_DT, "w") as file:
+    #     writer = csv.DictWriter(file, aftpr_keys)
+    #     writer.writeheader()
+    #     writer.writerows(old_rows.values())
+    # del main_dict
+    # print("\nTime lost: " + str(time.time() - start))
+    # print("-" * 100, end="\n\n")
 
     print("After-processing ...")
     after_process()
